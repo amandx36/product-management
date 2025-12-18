@@ -1,4 +1,4 @@
-package com.Management.productManagement.DTO;
+package com.Management.productManagement.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
