@@ -5,6 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+// This class for taking the data from client
+
+
+
+
+
 // this file for the creating the product
 @Data // for removing all the boiler plate code like getter and setter
 @AllArgsConstructor
