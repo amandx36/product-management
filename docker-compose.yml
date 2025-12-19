@@ -1,31 +1,65 @@
 services:
+  # =========================
+  # DATABASE SERVICE
+  # =========================
   db:
+    # MariaDB ka official image use ho raha hai
     image: mariadb:10.6
+
+    # Container ka naam (docker ps me ye naam dikhega)
     container_name: mariadb
+
     environment:
+      # MariaDB root user ka password
       MYSQL_ROOT_PASSWORD: root
+
+      # Ye database auto-create ho jaayega container start hote hi
       MYSQL_DATABASE: product_db
+
     volumes:
+      # Database ka data container ke bahar store hoga (persistent storage)
+      # Container delete ho jaye, tab bhi data safe rahega
       - mariadb_data:/var/lib/mysql
+
     healthcheck:
+      # Check karta rahega ki database ready hai ya nahi
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # =========================
+  # SPRING BOOT APPLICATION
+  # =========================
   app:
+    # Ye image tumne Dockerfile se banayi hai
     image: product-management
+
     ports:
-      - "8083:8083"
       # HOST_PORT : CONTAINER_PORT
+      # Browser/Postman se 8083 hit karoge → container ke 8083 pe jayega
+      - "8083:8083"
 
     environment:
+      # Spring Boot ko bataya ja raha hai database kaha hai
+      # "db" = service name (Docker network ke andar hostname)
       SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/product_db
+
+      # Database username
       SPRING_DATASOURCE_USERNAME: root
+
+      # Database password
       SPRING_DATASOURCE_PASSWORD: root
+
     depends_on:
+      # App tabhi start hogi jab database healthy ho
       db:
         condition: service_healthy
 
+# =========================
+# VOLUMES (DATA PERSISTENCE)
+# =========================
 volumes:
   mariadb_data:
+    # Ye Docker ke system me ek volume create karega
+    # Actual database data yahi store hota hai
