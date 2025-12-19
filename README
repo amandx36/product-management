@@ -2,9 +2,9 @@
 
 A robust, production-ready Spring Boot application that provides comprehensive RESTful APIs for product management with enterprise-grade features including full CRUD operations, input validation, centralized exception handling, and persistent data storage.
 
-##  Overview
+## Overview
 
-This project implements a scalable product management system with a clean, layered architecture that separates concerns across controller, service, repository, and data access layers. The application is built with Spring Boot 3.x, leverages Spring Data JPA for ORM, and uses MariaDB as the primary data store.
+This project implements a scalable product management system with a clean, layered architecture that separates concerns across controller, service, repository, and data access layers. The application is built with Spring Boot 3.x, leverages Spring Data JPA for ORM, and uses MariaDB as the primary data store. Containerization support with Docker and Docker Compose enables seamless deployment across environments.
 
 ## Technology Stack
 
@@ -15,10 +15,12 @@ This project implements a scalable product management system with a clean, layer
 | Spring Framework | 6.x |
 | Spring Data JPA | Latest |
 | Hibernate ORM | Latest |
-| MariaDB | 10.x+ |
+| MariaDB | 10.6+ |
 | Apache Maven | 3.8+ |
 | Lombok | 1.18+ |
 | Jakarta Validation | 3.x |
+| Docker | Latest |
+| Docker Compose | Latest |
 
 ## Project Structure
 
@@ -28,6 +30,8 @@ productManagement/
 ├── README.md
 ├── LICENSE
 ├── HELP.md
+├── Dockerfile
+├── docker-compose.yml
 └── src/
     ├── main/
     │   ├── java/com/Management/productManagement/
@@ -57,7 +61,7 @@ productManagement/
         └── [Test classes]
 ```
 
-##  Architecture
+## Architecture
 
 The application follows a **layered architectural pattern** with clear separation of concerns:
 
@@ -88,7 +92,41 @@ The application follows a **layered architectural pattern** with clear separatio
 └─────────────────────────────────────┘
 ```
 
-##  API Endpoints
+## Containerization with Docker
+
+### Dockerfile
+
+The application uses a multi-stage build process for optimized production images:
+
+**Stage 1: Build**
+- Uses Maven 3.9.6 with Eclipse Temurin JDK 17
+- Downloads dependencies with `mvn dependency:go-offline`
+- Compiles source code and packages as JAR
+
+**Stage 2: Run**
+- Uses Eclipse Temurin JRE 17 (lightweight runtime)
+- Copies compiled JAR from build stage
+- Exposes port 8080
+- Sets entrypoint to run the application
+
+### Docker Compose Setup
+
+The `docker-compose.yml` orchestrates two services:
+
+**MariaDB Service (`db`)**
+- Image: mariadb:10.6
+- Root password: root
+- Database: product_db
+- Persistent volume: mariadb_data
+- Health check: MySQL ping every 10 seconds with 5 retries
+
+**Application Service (`app`)**
+- Image: product-management (built from Dockerfile)
+- Port mapping: 8083:8083 (host:container)
+- Depends on: MariaDB service (waits for healthy status)
+- Environment variables configured for database connectivity
+
+## API Endpoints
 
 ### Health Check
 - **Endpoint:** `GET /api/products/health`
@@ -170,7 +208,7 @@ GET /api/products/price-range?minPrice=50&maxPrice=150
 ```
 **Response:** `200 OK` with products within price range
 
-##  Key Features
+## Key Features
 
 ### Transaction Management
 All database operations are managed through the `@Transactional` annotation at the service layer, ensuring:
@@ -192,7 +230,14 @@ Jakarta Validation annotations ensure data integrity at the application level:
 - Validation occurs before database interaction
 - Clear error messages for validation failures
 
-##  Core Annotations Reference
+### Docker & Container Support
+- Multi-stage Docker build for optimized image sizes
+- Docker Compose for automated multi-container orchestration
+- Health checks for database availability
+- Persistent volume management for data persistence
+- Environment-based configuration management
+
+## Core Annotations Reference
 
 ### Controller Layer
 | Annotation | Purpose |
@@ -257,29 +302,17 @@ Jakarta Validation annotations ensure data integrity at the application level:
 | `@ToString` | toString() method |
 | `@EqualsAndHashCode` | equals() and hashCode() methods |
 
-## 🧪 Testing
-
-The API has been thoroughly tested using industry-standard tools:
-
-- **Postman:** API endpoint testing and validation
-- **MariaDB Client:** Database integrity verification
-- **Manual Testing:** Validation flows, exception handling, edge cases
-
-### Test Coverage
-- All CRUD operations
-- Input validation scenarios
-- Exception handling paths
-- Transaction rollback scenarios
-- Search and filter functionality
-
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Java 17 or higher
 - Maven 3.8+
-- MariaDB 10.x or higher
+- MariaDB 10.6 or higher
+- Docker and Docker Compose (for containerized deployment)
 
 ### Installation
+
+#### Option 1: Local Development (Without Docker)
 
 1. Clone the repository:
 ```bash
@@ -307,6 +340,73 @@ mvn spring-boot:run
 
 The API will be available at `http://localhost:8080/api/products`
 
+#### Option 2: Docker Compose Deployment (Recommended)
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd productManagement
+```
+
+2. Build and start containers:
+```bash
+docker-compose up --build
+```
+
+This command will:
+- Build the Docker image for the application
+- Start MariaDB container with persistent storage
+- Start the application container
+- Automatically establish network connectivity between services
+- Perform health checks for database availability
+
+3. Access the API:
+```
+http://localhost:8083/api/products
+```
+
+4. Stop containers:
+```bash
+docker-compose down
+```
+
+5. Stop containers and remove volumes:
+```bash
+docker-compose down -v
+```
+
+### Docker Compose Environment Variables
+
+The application automatically connects to MariaDB using these environment variables configured in `docker-compose.yml`:
+
+- `SPRING_DATASOURCE_URL`: jdbc:mariadb://db:3306/product_db
+- `SPRING_DATASOURCE_USERNAME`: root
+- `SPRING_DATASOURCE_PASSWORD`: root
+
+The MariaDB service is configured with:
+- `MYSQL_ROOT_PASSWORD`: root
+- `MYSQL_DATABASE`: product_db
+
+##  Deployment
+
+### Docker Build (Manual)
+
+Build the image manually:
+```bash
+docker build -t product-management .
+```
+
+Run the container:
+```bash
+docker run -d \
+  -p 8083:8080 \
+  -e SPRING_DATASOURCE_URL=jdbc:mariadb://host.docker.internal:3306/product_db \
+  -e SPRING_DATASOURCE_USERNAME=root \
+  -e SPRING_DATASOURCE_PASSWORD=root \
+  --name product-app \
+  product-management
+```
+
 ##  License
 
 This project is licensed under the terms specified in the LICENSE file.
@@ -315,7 +415,6 @@ This project is licensed under the terms specified in the LICENSE file.
 
 Contributions are welcome. Please ensure that your code follows the project's architecture and coding standards.
 
-
-
+---
 
 Built with ❤️ by Aman Deep
