@@ -17,7 +17,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // this is the custom query methods
     Optional<Product> findByName(String name);
 
-    Optional<Product> findProductCode(String productCode);
+
+    Optional<Product> findByProductCode(String productCode);
 
     List<Product> findByPriceGreaterThan(Double price);
 
