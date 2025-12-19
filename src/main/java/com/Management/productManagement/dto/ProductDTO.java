@@ -5,12 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 // This class for taking the data from client
-
-
-
-
 
 // this file for the creating the product
 @Data // for removing all the boiler plate code like getter and setter
@@ -31,7 +26,7 @@ public class ProductDTO {
 
     @Min(value = 0, message = "Must be positive ")
     private Integer quantity;
-
-    @Pattern(regexp = "A-Z / a-z / 0-9", message = "Product code must follow pattern: XXX-123")
+    @Pattern(regexp = "^[A-Z]{3}-\\d{3}$", message = "Product code must follow pattern: XXX-123")
     private String productCode;
+
 }

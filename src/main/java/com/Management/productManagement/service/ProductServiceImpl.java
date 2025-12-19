@@ -9,11 +9,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.Management.productManagement.helperModule.ProductResponseDTOHelper;
 
+import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductServiceImpl implements ProductService {
 
     // for connecting to the datbase through productRepository ;
