@@ -2,16 +2,17 @@ package com.Management.productManagement.controller;
 
 import com.Management.productManagement.dto.ProductDTO;
 import com.Management.productManagement.dto.ProductResponseDTO;
-import com.Management.productManagement.entity.Product;
+
 import com.Management.productManagement.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
@@ -69,10 +70,38 @@ public class ProductController {
     // get product by Prince range
     @GetMapping("/price-range")
     public ResponseEntity<List<ProductResponseDTO>> getProductsByPriceRange(
-            @PathVariable Double minPrice,
-            @PathVariable Double maxPrice) {
+            @RequestParam Double minPrice,
+            @RequestParam Double maxPrice) {
         List<ProductResponseDTO> products = productService.getProductsByPriceRange(minPrice, maxPrice);
         return ResponseEntity.ok(products);
     }
 
+    // get the product by search
+    @GetMapping("/search")
+    public  ResponseEntity<List<ProductResponseDTO>> searchProduct(@RequestParam String keyword ){
+        List<ProductResponseDTO> products =  productService.searchProducts(keyword);
+        return  ResponseEntity.ok(products);
+    }
+
+    // api for making the partial  updation
+    @PatchMapping("/{id}/quantity")
+    //   we got this from client {
+    //   "quantity": 10
+    //      }
+
+    public ResponseEntity<ProductResponseDTO> updateProductQuantity(@PathVariable Long id , @RequestBody Map<String, Integer> request){
+    Integer quantity = request.get("quantity");
+
+    ProductResponseDTO updateProduct = productService.updateProductQuantity(id,quantity);
+    return ResponseEntity.ok(updateProduct);
+    }
+
+
+
+
+    // Health Check
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("Product Service is up and running!");
+    }
 }
