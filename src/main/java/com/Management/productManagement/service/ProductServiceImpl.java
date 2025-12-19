@@ -141,4 +141,46 @@ public class ProductServiceImpl implements ProductService {
         return responseList;
     }
 
+    @Override
+    public List<ProductResponseDTO> searchProducts(String keyword) {
+
+        List<Product> products = productRepository.searchProducts(keyword);
+
+        List<ProductResponseDTO> responseList = new ArrayList<>();
+
+        for (Product product : products) {
+            ProductResponseDTO dto = productResponseDTOHelper.convertToResponseDTO(product);
+            responseList.add(dto);
+        }
+
+        return responseList;
+    }
+
+//    DB se products mile
+//    Empty response list banayi
+//    Ek-ek product uthaya
+//    DTO me convert kiya
+//    List me add kiya
+//    List return
+
+
+    @Override
+    public ProductResponseDTO updateProductQuantity(Long id, Integer quantity) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Product", "id", id)
+                );
+
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantity cannot be negative");
+        }
+
+        product.setQuantity(quantity);
+
+        Product updatedProduct = productRepository.save(product);
+
+        return productResponseDTOHelper.convertToResponseDTO(updatedProduct);
+    }
+
 }
